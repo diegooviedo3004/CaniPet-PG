@@ -11,6 +11,14 @@ const loginServer = newObject => {
   return request.then(response => response.data)
 }
 
+const descargarDOCX = newObject => {
+  const request = axios.post(`${baseUrl}/descargar/`, newObject, {
+    responseType: 'stream'
+  })
+  return request.then(response => response.data)
+}
+
+
 // const deletePerson = id => {
 //   const request = axios.delete(`${baseUrl}/${id}`)
 //   return request
@@ -21,4 +29,4 @@ const loginServer = newObject => {
 //   return request.then(response => response.data)
 // }
 
-export default { loginServer }
+export default { loginServer, descargarDOCX }

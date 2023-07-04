@@ -1,20 +1,26 @@
 import * as React from 'react';
-import { BottomNavigation, Text } from 'react-native-paper';
+import { BottomNavigation, Button, Text } from 'react-native-paper';
 import useStore from '../store';
 import { IconButton, Tooltip } from 'react-native-paper';
 import api from '../utils/api';
 import { View } from 'react-native';
 import {
     useQuery,
+    useQueryClient
 } from 'react-query'
 import NativeCard from './NativeCard';
 import {
     SafeAreaView,
     FlatList,
     StyleSheet
-  } from 'react-native';
+} from 'react-native';
+import CardProductos from './CardProductos';
+import { Linking } from 'react-native';
+import { ScrollView } from 'react-native';
+
 
 const PERRITOS_URL = 'https://canipetpg.pythonanywhere.com/static/mobile/img/demo-img/caninos.png'
+const baseUrl = 'https://8511-186-77-198-83.ngrok-free.app/api'
 
 const MusicRoute = () => {
     const { code } = useStore();
@@ -24,12 +30,14 @@ const MusicRoute = () => {
         refetchInterval: 2000,
     });
 
-    if(query.isLoading) return <>Cargando</>
+    if (query.isLoading) return <>Cargando</>
 
     const { pacientes, productos } = query.data;
+
     return (
         <View style={styles.container}>
-            <SafeAreaView style={{flex: 1}}>
+            <ScrollView>
+            <SafeAreaView>
                 <FlatList
                     data={pacientes}
                     renderItem={({ item }) => (
@@ -42,12 +50,41 @@ const MusicRoute = () => {
                     keyExtractor={item => item.id}
                     numColumns={1}
                 />
+                <CardProductos title={"Productos"} where={"Home"} mode={"contained"} subtitle={"Mira lo que tu veterinario te recomienda."}></CardProductos>
             </SafeAreaView>
+            </ScrollView>
         </View>
     );
 }
 
-const AlbumsRoute = () => <Text>Albums</Text>;
+const AlbumsRoute = () => {
+    const { code } = useStore();
+
+    const queryClient = useQueryClient();
+    const { pacientes, productos } = queryClient.getQueryData('getProductos');
+
+    console.log(pacientes)
+    const handleDescargarAll = () => {
+        Linking.openURL(`${baseUrl}/descargar/?code=${code}`);
+    }
+
+    const handleDescargarId = (id) => {
+        Linking.openURL(`${baseUrl}/descargar/?code=${code}&paciente=${id}`);
+    }
+
+
+    return (
+        <>
+        <ScrollView >
+        {pacientes.map((p) => (
+                <CardProductos handlerPress={() => handleDescargarId(p.id)} imgUrl={p.foto} key={p.id} title={p.nombre}  mode="contained"></CardProductos>
+            ))}
+            <Button style={{marginVertical:5}} onPress={() => handleDescargarAll()} buttonColor='secondary' mode="elevated">Descargar todo</Button>
+        </ScrollView>
+         
+        </>
+    )
+}
 
 const RecentsRoute = () => <Text>Recents</Text>;
 
@@ -90,8 +127,8 @@ const Base = () => {
 
 const styles = StyleSheet.create({
     container: {
-      flex: 1,
+        flex: 1,
     }
-  })
+})
 
 export default Base;
