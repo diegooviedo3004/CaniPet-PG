@@ -18,6 +18,7 @@ import CardProductos from './CardProductos';
 import { Linking } from 'react-native';
 import { ScrollView } from 'react-native';
 import GoogleMap, { Marker } from 'react-maps-google';
+import { DiscussionEmbed } from 'disqus-react';
 
 const PERRITOS_URL = 'https://canipetpg.pythonanywhere.com/static/mobile/img/demo-img/caninos.png'
 const baseUrl = 'http://localhost:8000/api'
@@ -100,19 +101,40 @@ const AlbumsRoute = () => {
 
 const RecentsRoute = () => {
     const { code } = useStore();
+    
+    const query = useQuery({
+        queryFn: () => api.loginServer({ code }), // Envuelve la función en otra función
+        queryKey: ["getProductos2"],
+        refetchInterval: 20000,
+    });
 
+    if (query.isLoading) return <>Cargando</>
+
+    const { id_vet, lat, lon } = query.data;
+
+    const disqusShortname = "canipet"
+    const disqusConfig = {
+      url: "https://canipetpg2.pythonanywhere.com/",
+      identifier: `${id_vet}`,
+      title: "Canipet"
+    }
+
+    
     return (
         <>
             <Text>Tu veterinario: </Text>
             <ScrollView>
                 <View style={{ height: 500 }}>
-                    <GoogleMap apiKey="AIzaSyAKFipNOUTn8LjisXG6Ei2IQiB1T2fb4xA">
-                        <Marker position={{ lat: 40.7174343, lng: -73.9930319 }} />
+                    <GoogleMap options={{center: { lat: parseFloat(lat), lng: parseFloat(lon) }, zoom: 15}} apiKey="AIzaSyAKFipNOUTn8LjisXG6Ei2IQiB1T2fb4xA">
+                        <Marker position={{ lat: parseFloat(lat), lng: parseFloat(lon) }} />
                     </GoogleMap>
                 </View>
 
                 <View style={{ padding: 10 }}>
-                    Aqui van los comentarios
+                    <DiscussionEmbed
+                          shortname={disqusShortname}
+                          config={disqusConfig}
+                    />
                 </View>
 
             </ScrollView>
