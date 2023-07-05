@@ -1,5 +1,5 @@
 import axios from 'axios'
-const baseUrl = 'https://8511-186-77-198-83.ngrok-free.app/api'
+const baseUrl = 'http://localhost:8000/api'
 
 // const getAll = () => {
 //   const request = axios.get(baseUrl)

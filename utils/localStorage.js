@@ -10,4 +10,12 @@ const getData = async () => {
     }
   };
 
-  export default { getData }
+const removeElement = async () => {
+  try {
+    const value = await AsyncStorage.removeItem('code');
+  
+  } catch (e) {
+  }
+}
+
+  export default { getData, removeElement}

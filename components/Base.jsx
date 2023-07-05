@@ -17,18 +17,22 @@ import {
 import CardProductos from './CardProductos';
 import { Linking } from 'react-native';
 import { ScrollView } from 'react-native';
-
+import GoogleMap, { Marker } from 'react-maps-google';
 
 const PERRITOS_URL = 'https://canipetpg.pythonanywhere.com/static/mobile/img/demo-img/caninos.png'
-const baseUrl = 'https://8511-186-77-198-83.ngrok-free.app/api'
+const baseUrl = 'http://localhost:8000/api'
 
 const MusicRoute = () => {
-    const { code } = useStore();
+    const { code, logout } = useStore();
     const query = useQuery({
         queryFn: () => api.loginServer({ code }), // Envuelve la función en otra función
         queryKey: ["getProductos"],
         refetchInterval: 2000,
     });
+
+    if (query.isError) {
+        logout()
+    }
 
     if (query.isLoading) return <>Cargando</>
 
@@ -37,21 +41,21 @@ const MusicRoute = () => {
     return (
         <View style={styles.container}>
             <ScrollView>
-            <SafeAreaView>
-                <FlatList
-                    data={pacientes}
-                    renderItem={({ item }) => (
-                        <NativeCard
-                            imageUrl={PERRITOS_URL}
-                            title={item.nombre}
-                            key={item.id}
-                        />
-                    )}
-                    keyExtractor={item => item.id}
-                    numColumns={1}
-                />
-                <CardProductos title={"Productos"} where={"Home"} mode={"contained"} subtitle={"Mira lo que tu veterinario te recomienda."}></CardProductos>
-            </SafeAreaView>
+                <SafeAreaView>
+                    <FlatList
+                        data={pacientes}
+                        renderItem={({ item }) => (
+                            <NativeCard
+                                imageUrl={PERRITOS_URL}
+                                title={item.nombre}
+                                key={item.id}
+                            />
+                        )}
+                        keyExtractor={item => item.id}
+                        numColumns={1}
+                    />
+                    <CardProductos title={"Productos"} where={"Home"} mode={"contained"} subtitle={"Mira lo que tu veterinario te recomienda."}></CardProductos>
+                </SafeAreaView>
             </ScrollView>
         </View>
     );
@@ -60,8 +64,16 @@ const MusicRoute = () => {
 const AlbumsRoute = () => {
     const { code } = useStore();
 
-    const queryClient = useQueryClient();
-    const { pacientes, productos } = queryClient.getQueryData('getProductos');
+    const query = useQuery({
+        queryFn: () => api.loginServer({ code }), // Envuelve la función en otra función
+        queryKey: ["getProductos2"],
+        refetchInterval: 2000,
+    });
+
+    if (query.isLoading) return <>Cargando</>
+
+    const { pacientes, productos } = query.data;
+
 
     console.log(pacientes)
     const handleDescargarAll = () => {
@@ -75,18 +87,39 @@ const AlbumsRoute = () => {
 
     return (
         <>
-        <ScrollView >
-        {pacientes.map((p) => (
-                <CardProductos handlerPress={() => handleDescargarId(p.id)} imgUrl={p.foto} key={p.id} title={p.nombre}  mode="contained"></CardProductos>
-            ))}
-            <Button style={{marginVertical:5}} onPress={() => handleDescargarAll()} buttonColor='secondary' mode="elevated">Descargar todo</Button>
-        </ScrollView>
-         
+            <ScrollView >
+                {pacientes.map((p) => (
+                    <CardProductos handlerPress={() => handleDescargarId(p.id)} imgUrl={p.foto} key={p.id} title={p.nombre} mode="contained"></CardProductos>
+                ))}
+                <Button style={{ marginVertical: 5 }} onPress={() => handleDescargarAll()} buttonColor='secondary' mode="elevated">Descargar todo</Button>
+            </ScrollView>
+
         </>
     )
 }
 
-const RecentsRoute = () => <Text>Recents</Text>;
+const RecentsRoute = () => {
+    const { code } = useStore();
+
+    return (
+        <>
+            <Text>Tu veterinario: </Text>
+            <ScrollView>
+                <View style={{ height: 500 }}>
+                    <GoogleMap apiKey="AIzaSyAKFipNOUTn8LjisXG6Ei2IQiB1T2fb4xA">
+                        <Marker position={{ lat: 40.7174343, lng: -73.9930319 }} />
+                    </GoogleMap>
+                </View>
+
+                <View style={{ padding: 10 }}>
+                    Aqui van los comentarios
+                </View>
+
+            </ScrollView>
+
+        </>
+    )
+}
 
 const NotificationsRoute = () => <Text>Notifications</Text>;
 
